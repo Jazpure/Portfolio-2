@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Jasper Curtis</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;1,400&family=DM+Mono:wght@300&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #ffffff;
+    --ink: #111111;
+    --mid: #888888;
+    --line: #dddddd;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'DM Mono', monospace;
+    font-weight: 300;
+    font-size: 12px;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  /* GRAIN */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: 999;
+    pointer-events: none;
+    opacity: 0.28;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+    background-size: 120px 120px;
+    background-repeat: repeat;
+  }
+
+  /* VIGNETTE */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: 998;
+    pointer-events: none;
+    background: radial-gradient(ellipse at center, transparent 60%, rgba(15,20,25,0.12) 100%);
+  }
+
+  /* NAV */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; align-items: baseline; justify-content: space-between;
+    padding: 22px 40px;
+    background: var(--bg);
+  }
+
+  .nav-name {
+    font-family: 'EB Garamond', serif;
+    font-size: 17px;
+    color: var(--ink);
+    text-decoration: none;
+  }
+
+  .nav-links { display: flex; gap: 28px; }
+  .nav-links a {
+    color: var(--mid);
+    text-decoration: none;
+    font-size: 11px;
+    letter-spacing: 0.04em;
+    transition: color 0.15s;
+  }
+  .nav-links a:hover { color: var(--ink); }
+
+  /* TAGLINE */
+  .tagline {
+    padding: 100px 40px 48px;
+    font-family: 'EB Garamond', serif;
+    font-size: 15px;
+    font-style: italic;
+    color: var(--mid);
+  }
+
+  /* PROJECT LIST */
+  .projects { padding: 0 40px 80px; }
+
+  .project-row {
+    border-top: 1px solid var(--line);
+    padding: 28px 0;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+  }
+  .project-row:last-child { border-bottom: 1px solid var(--line); }
+
+  /* semi-opaque hover overlay */
+  .project-row::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(255, 255, 255, 0.72);
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    z-index: 1;
+    pointer-events: none;
+  }
+  .project-row:hover::before { opacity: 1; }
+
+  /* anchored view label */
+  .project-row::after {
+    content: 'view';
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'EB Garamond', serif;
+    font-size: 36px;
+    font-style: italic;
+    color: var(--ink);
+    letter-spacing: 0.02em;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    z-index: 2;
+    pointer-events: none;
+  }
+  .project-row:hover::after { opacity: 1; }
+  .project-row.open::after { content: 'close'; }
+
+  .project-row-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 40px;
+  }
+
+  .project-row-left {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    flex: 1;
+  }
+
+  .project-name {
+    font-family: 'EB Garamond', serif;
+    font-size: 32px;
+    line-height: 1.1;
+    transition: opacity 0.15s;
+  }
+  .project-row:hover .project-name { opacity: 0.55; }
+
+  .project-brief {
+    color: var(--mid);
+    font-style: italic;
+    font-family: 'EB Garamond', serif;
+    font-size: 15px;
+    line-height: 1.4;
+  }
+
+  .project-thumb {
+    width: 220px;
+    height: 140px;
+    flex-shrink: 0;
+    overflow: hidden;
+  }
+
+  .project-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .project-thumb-placeholder {
+    width: 100%;
+    height: 100%;
+    background: repeating-linear-gradient(
+      45deg,
+      #e8e8e8,
+      #e8e8e8 1px,
+      #f0f0f0 1px,
+      #f0f0f0 8px
+    );
+  }
+
+  /* ABOUT */
+  #about {
+    padding: 60px 40px;
+    border-top: 1px solid var(--line);
+    display: grid;
+    grid-template-columns: 160px 1fr;
+    gap: 60px;
+    align-items: start;
+  }
+
+  .about-label { font-size: 11px; color: var(--mid); letter-spacing: 0.04em; }
+
+  #about p {
+    font-family: 'EB Garamond', serif;
+    font-size: 18px;
+    line-height: 1.75;
+    color: var(--ink);
+  }
+
+  /* FOOTER */
+  footer {
+    border-top: 1px solid var(--line);
+    padding: 18px 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: var(--mid);
+    font-size: 10px;
+  }
+
+  .footer-links { display: flex; gap: 20px; }
+  .footer-links a { color: var(--mid); text-decoration: none; transition: color 0.15s; }
+  .footer-links a:hover { color: var(--ink); }
+
+  @media (max-width: 680px) {
+    nav, .tagline, .projects, #about, footer { padding-left: 20px; padding-right: 20px; }
+    .project-brief { display: none; }
+    #about { grid-template-columns: 1fr; gap: 16px; }
+    .nav-links { gap: 16px; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-name" href="#">Jasper Curtis</a>
+  <div class="nav-links">
+    <a href="#about">about</a>
+    <a href="/cdn-cgi/l/email-protection#0e77617b7c4e6b636f6762206d6163">contact</a>
+  </div>
+</nav>
+
+<div class="tagline">Media that smiles at you.</div>
+
+<div class="projects">
+
+  <div class="project-row" onclick="window.open('bandaid/index.html', '_blank')">
+    <div class="project-row-header">
+      <div class="project-row-left">
+        <span class="project-name">Band-Aid</span>
+        <span class="project-brief">Beyond the bandage, an emotional promise — you will be ok.</span>
+      </div>
+      <div class="project-thumb">
+        <img src="bandaid-thumb.jpg" alt="Band-Aid">
+      </div>
+    </div>
+  </div>
+
+  <div class="project-row" onclick="window.open('underberg/index.html', '_blank')">
+    <div class="project-row-header">
+      <div class="project-row-left">
+        <span class="project-name">Underberg</span>
+        <span class="project-brief">Twist Sip Repeat: a campaign for the drink you haven't found yet.</span>
+      </div>
+      <div class="project-thumb">
+        <img src="underberg-thumb.jpg" alt="Underberg">
+      </div>
+    </div>
+  </div>
+  <div class="project-row" onclick="window.open('storyboard/index.html', '_blank')">
+    <div class="project-row-header">
+      <div class="project-row-left">
+        <span class="project-name">YouTube Spot</span>
+        <span class="project-brief">Storyboard</span>
+      </div>
+      <div class="project-thumb">
+        <img src="storyboard-thumb.jpg" alt="YouTube Spot">
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  <span>Jasper Curtis © 2026</span>
+  <div class="footer-links">
+    <a href="/cdn-cgi/l/email-protection#1861776d6a587d75797174367b7775">email</a>
+    <a href="#">linkedin</a>
+  </div>
+</footer>
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+  function toggleEmbed(id, row) {
+    const wrap = document.getElementById('em
